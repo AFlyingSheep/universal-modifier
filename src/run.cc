@@ -4,7 +4,6 @@
 
 #include "baseAddressFind.hpp"
 
-
 template <typename Derive, typename ValueType, std::size_t OFFSET_NUM>
 struct OffsetBase {
   static DWORD_PTR real_ptr;
