@@ -1,13 +1,13 @@
+#ifndef BASE_ADDRESS_FIND_HPP
+#define BASE_ADDRESS_FIND_HPP
+
 #include <Psapi.h>
 #include <Windows.h>
 #include <tlhelp32.h>
 
 #include <iostream>
 
-
-using namespace std;
-
-DWORD GetProcessIdByName(const string& processName) {
+DWORD GetProcessIdByName(const std::string& processName) {
   DWORD processId = 0;
   HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
@@ -34,25 +34,26 @@ uintptr_t findBaseAddress(const char* processName, const char* targetDllName) {
   DWORD processId =
       GetProcessIdByName(processName);  // Replace with the target process ID
 
-  // Step 1: 获取进程句柄
+  // Step 1: Get handler of process
   HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
                                 FALSE, processId);
   if (hProcess == NULL) {
-    cout << "Failed to open process. Error: " << GetLastError() << endl;
+    std::cout << "Failed to open process. Error: " << GetLastError()
+              << std::endl;
     return 0;
   }
 
-  // Step 2: 枚举模块
+  // Step 2: Enum the modules
   HMODULE hModules[1024];
   DWORD cbNeeded;
   if (!EnumProcessModules(hProcess, hModules, sizeof(hModules), &cbNeeded)) {
-    cout << "Failed to enumerate process modules. Error: " << GetLastError()
-         << endl;
+    std::cout << "Failed to enumerate process modules. Error: "
+              << GetLastError() << std::endl;
     CloseHandle(hProcess);
     return 0;
   }
 
-  // Step 3 & 4: 获取目标 DLL 的基址
+  // Step 3 & 4: Get the basic address of DLL
   HMODULE hTargetModule = NULL;
   char szModuleName[MAX_PATH];
   for (DWORD i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
@@ -70,18 +71,20 @@ uintptr_t findBaseAddress(const char* processName, const char* targetDllName) {
   }
 
   if (hTargetModule == NULL) {
-    cout << "Target DLL not found in the process." << endl;
+    std::cout << "Target DLL not found in the process." << std::endl;
     CloseHandle(hProcess);
     return 1;
   }
 
-  // Step 5: 获取基址
+  // Step 5: Get the basic address
   uintptr_t baseAddress = (uintptr_t)hTargetModule;
   // cout << "Base address of " << targetDllName << " in process " << processId
   // << ": 0x" << hex << baseAddress << endl;
 
-  // Step 6: 关闭进程句柄
+  // Step 6: Close the handler
   CloseHandle(hProcess);
 
   return baseAddress;
 }
+
+#endif  // BASE_ADDRESS_FIND_HPP
