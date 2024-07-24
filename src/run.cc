@@ -10,6 +10,8 @@
 int main() {
   ModifierKernel<Knight> kernel;
   kernel.run(-1, 1000);
+  // kernel.init_value(100, 100, 10000);
+  // kernel.run_test();
 
   return 0;
 }

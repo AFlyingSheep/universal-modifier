@@ -5,6 +5,10 @@
 #include <memoryapi.h>
 #include <synchapi.h>
 
+#include <forward_list>
+#include <iostream>
+#include <utility>
+
 #include "baseAddressFind.hpp"
 #include "detail/typelist.hpp"
 
@@ -39,6 +43,17 @@ class ModifierKernel {
     }
   }
 
+  template <typename TypeList>
+  int cout_buff() {
+    if constexpr (!IsEmpty<TypeList>::value) {
+      using Type = Front<TypeList>;
+      std::cout << Type::default_value << std::endl;
+      return cout_buff<PopFront<TypeList>>();
+    } else {
+      return 0;
+    }
+  }
+
   void run(int time = -1, int interval = 1000) {
     bool inf = (time < 0);
     while (inf || time > 0) {
@@ -56,6 +71,8 @@ class ModifierKernel {
     }
   }
 
+  void run_test() { cout_buff<typename GameType::GameElement>(); }
+
   template <typename TypeList>
   void init_pointer() {
     if constexpr (!IsEmpty<TypeList>::value) {
@@ -63,6 +80,29 @@ class ModifierKernel {
       Type::get_real_ptr(h_process_, base_pointer_);
       init_pointer<PopFront<TypeList>>();
     }
+  }
+
+  template <typename TypeList, typename T>
+  void init_value_impl(T&& value) {
+    if constexpr (!IsEmpty<TypeList>::value) {
+      using Type = Front<TypeList>;
+      Type::set_default_value(value);
+    }
+  }
+
+  template <typename TypeList, typename T, typename... Args>
+  void init_value_impl(T&& value, Args&&... args) {
+    if constexpr (!IsEmpty<TypeList>::value) {
+      using Type = Front<TypeList>;
+      Type::set_default_value(value);
+      init_value_impl<PopFront<TypeList>>(std::forward<Args>(args)...);
+    }
+  }
+
+  template <typename... Args>
+  void init_value(Args&&... args) {
+    init_value_impl<typename GameType::GameElement>(
+        std::forward<Args>(args)...);
   }
 
  private:

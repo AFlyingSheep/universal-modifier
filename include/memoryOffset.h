@@ -25,6 +25,8 @@ struct OffsetBase {
     real_ptr += Derive::offset[OFFSET_NUM - 1];
     return 0;
   }
+  static ValueType get_default_value() { return default_value; }
+  static void set_default_value(ValueType value) { default_value = value; }
 
   static ValueType default_value;
 };
