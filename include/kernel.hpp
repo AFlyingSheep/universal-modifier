@@ -6,7 +6,9 @@
 #include <synchapi.h>
 
 #include <forward_list>
+#include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <utility>
 
 #include "baseAddressFind.hpp"
@@ -25,6 +27,9 @@ class ModifierKernel {
 
     // Init all element's pointer
     init_pointer<typename GameType::GameElement>();
+
+    // Init default values by config file or fix values.
+    init_value();
   }
 
   template <typename TypeList>
@@ -82,27 +87,65 @@ class ModifierKernel {
     }
   }
 
+  // Implement of init_value
   template <typename TypeList, typename T>
-  void init_value_impl(T&& value) {
+  void set_init_value_impl(T&& value) {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
       Type::set_default_value(value);
     }
   }
 
+  // Implement of init_value
   template <typename TypeList, typename T, typename... Args>
-  void init_value_impl(T&& value, Args&&... args) {
+  void set_init_value_impl(T&& value, Args&&... args) {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
       Type::set_default_value(value);
-      init_value_impl<PopFront<TypeList>>(std::forward<Args>(args)...);
+      set_init_value_impl<PopFront<TypeList>>(std::forward<Args>(args)...);
     }
   }
 
+  // Set the default value during compiling stage
   template <typename... Args>
-  void init_value(Args&&... args) {
-    init_value_impl<typename GameType::GameElement>(
+  void set_init_value(Args&&... args) {
+    set_init_value_impl<typename GameType::GameElement>(
         std::forward<Args>(args)...);
+  }
+
+  // Set the default value from config file
+  // Default file name: config.json
+  template <typename DefaultValueList, typename TypeList, std::size_t Index>
+  void init_value_by_config_impl(DefaultValueList& value_list) {
+    if constexpr (!IsEmpty<TypeList>::value) {
+      using Type = Front<TypeList>;
+      Type::set_default_value(value_list[Index]["value"]);
+      init_value_by_config_impl<DefaultValueList, PopFront<TypeList>,
+                                Index + 1>(value_list);
+    }
+  }
+
+  // Init values by config file
+  template <typename DefaultValueList>
+  void init_value_by_config(DefaultValueList& value_list) {
+    init_value_by_config_impl<DefaultValueList, typename GameType::GameElement,
+                              0>(value_list);
+  }
+
+  void init_value(std::string config_file = "config.json") {
+    std::ifstream stream(config_file);
+    if (!stream) {
+      std::cerr << "Can't open the config json: " << config_file << "."
+                << std::endl;
+      std::cerr << "Now use the default value.";
+      return;
+    }
+
+    nlohmann::json config_json;
+    stream >> config_json;
+
+    init_value_by_config(config_json[GameType::configName]);
+    std::cout << "Read the config file successfully." << std::endl;
   }
 
  private:

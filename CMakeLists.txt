@@ -17,5 +17,10 @@ project(universal-modifier)
 # )
 # FetchContent_MakeAvailable(googletest)
 
+# JSON Parser
+include(FetchContent)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 # add_subdirectory(test)
 add_subdirectory(src)

@@ -58,4 +58,21 @@ class IsEmpty<Typelist<>> {
   constexpr static bool value = true;
 };
 
+template <typename List>
+class LengthT;
+
+template <>
+class LengthT<Typelist<>> {
+  static constexpr std::size_t value = 0;
+};
+
+template <typename Head, typename... Tail>
+class LengthT<Typelist<Head, Tail...>> {
+ public:
+  static constexpr std::size_t value = 1 + LengthT<Typelist<Tail...>>::value;
+};
+
+template <typename List>
+using Length = LengthT<List>;
+
 #endif  // DETAIL_TYPELIST_HPP

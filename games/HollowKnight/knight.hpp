@@ -25,9 +25,11 @@ struct Knight {
 
   const static std::string exeName;
   const static std::string dllName;
+  const static std::string configName;
 };
 
 const std::string Knight::exeName = "hollow_knight.exe";
 const std::string Knight::dllName = "UnityPlayer.dll";
+const std::string Knight::configName = "HollowKnight";
 
 #endif  // KNIGHT_HPP
