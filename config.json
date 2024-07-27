@@ -7,6 +7,7 @@
     "?repeating": "Repeating round for cheating, -1 for infinite, 0 for disable",
     "repeating": -1
   },
+  "?HollowKnight": "https://store.steampowered.com/app/367520/Hollow_Knight/",
   "HollowKnight": [
     {
       "name": "health",
