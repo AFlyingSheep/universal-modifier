@@ -11,7 +11,7 @@
 
 int main() {
   ModifierKernel<Knight> kernel;
-  kernel.run(-1, 1000);
+  kernel.start();
   // kernel.run_test();
 
   return 0;

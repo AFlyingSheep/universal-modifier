@@ -63,7 +63,7 @@ class ModifierKernel {
     }
   }
 
-  void run(int time = -1, int interval = 1000) {
+  void run(int time, int interval) {
     bool inf = (time < 0);
     while (inf || time > 0) {
       if (!write_buffer<typename GameType::GameElement>()) {
@@ -79,6 +79,8 @@ class ModifierKernel {
       }
     }
   }
+
+  void start() { run(repeat_time_, interval_); }
 
   void run_test() { cout_buff<typename GameType::GameElement>(); }
 
@@ -138,6 +140,13 @@ class ModifierKernel {
                               0>(value_list);
   }
 
+  // Init global configuration by config file
+  template <typename Typelist>
+  void init_global_value(Typelist& value_list) {
+    repeat_time_ = value_list["repeating"];
+    interval_ = value_list["time_interval"];
+  }
+
   void init_value(std::string config_file = "config.json") {
     std::ifstream stream(config_file);
     if (!stream) {
@@ -151,13 +160,19 @@ class ModifierKernel {
     stream >> config_json;
 
     init_value_by_config(config_json[GameType::configName]);
-    std::cout << "Read the config file successfully." << std::endl;
+    init_global_value(config_json["global_config"]);
+    std::cout << "Read the config file and set value successfully."
+              << std::endl;
   }
 
  private:
   DWORD_PTR base_pointer_;
   DWORD process_id_;
   HANDLE h_process_;
+
+  // Global configuration
+  int repeat_time_;
+  int interval_;
 };
 
 #endif  // KERNEL_HPP
