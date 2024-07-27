@@ -70,7 +70,7 @@ class Runtime {
   void run_test() { kernel_->run_test(); }
 
  private:
-  ModifierKernel<GameType>* kernel_;
+  ModifierKernel<GameType>* kernel_ = nullptr;
   int timeout_ = 20;
   int retry_interval_ = 2000;
 };
