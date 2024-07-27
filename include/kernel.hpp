@@ -36,11 +36,13 @@ class ModifierKernel {
   int write_buffer() {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
-      if (!WriteProcessMemory(h_process_, (LPVOID)Type::real_ptr,
-                              &Type::default_value,
-                              sizeof(typename Type::ValueType), NULL)) {
-        printf("Write memory error in address: %p.\n", (void*)Type::real_ptr);
-        return 1;
+      if (Type::get_enable()) {
+        if (!WriteProcessMemory(h_process_, (LPVOID)Type::real_ptr,
+                                &Type::default_value,
+                                sizeof(typename Type::ValueType), NULL)) {
+          printf("Write memory error in address: %p.\n", (void*)Type::real_ptr);
+          return 1;
+        }
       }
       return write_buffer<PopFront<TypeList>>();
     } else {
@@ -52,7 +54,9 @@ class ModifierKernel {
   int cout_buff() {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
-      std::cout << Type::default_value << std::endl;
+      if (Type::get_enable()) {
+        std::cout << Type::default_value << std::endl;
+      }
       return cout_buff<PopFront<TypeList>>();
     } else {
       return 0;
@@ -120,6 +124,8 @@ class ModifierKernel {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
       Type::set_default_value(value_list[Index]["value"]);
+      // Set enable to false to disable the function
+      Type::set_enable(value_list[Index]["enable"]);
       init_value_by_config_impl<DefaultValueList, PopFront<TypeList>,
                                 Index + 1>(value_list);
     }

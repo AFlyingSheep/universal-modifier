@@ -3,15 +3,18 @@
   "HollowKnight": [
     {
       "name": "health",
-      "value": 100
+      "value": 100,
+      "enable": true
     },
     {
       "name": "power",
-      "value": 100
+      "value": 100,
+      "enable": true
     },
     {
       "name": "gold",
-      "value": 12345
+      "value": 12345,
+      "enable": true
     }
   ]
 }

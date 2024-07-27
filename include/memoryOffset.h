@@ -28,12 +28,19 @@ struct OffsetBase {
   static ValueType get_default_value() { return default_value; }
   static void set_default_value(ValueType value) { default_value = value; }
 
+  // Set enable to false to disable the function
+  static bool get_enable() { return enable; }
+  static void set_enable(bool value) { enable = value; }
+
   static ValueType default_value;
+  static bool enable;
 };
 
 template <typename Derive, typename ValueType, size_t OFFSET_NUM>
 DWORD_PTR OffsetBase<Derive, ValueType, OFFSET_NUM>::real_ptr = 0;
 template <typename Derive, typename ValueType, size_t OFFSET_NUM>
 ValueType OffsetBase<Derive, ValueType, OFFSET_NUM>::default_value = 100;
+template <typename Derive, typename ValueType, size_t OFFSET_NUM>
+bool OffsetBase<Derive, ValueType, OFFSET_NUM>::enable = false;
 
 #endif  // MEMORYOFFSET_H_
