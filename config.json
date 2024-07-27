@@ -15,6 +15,11 @@
       "name": "gold",
       "value": 12345,
       "enable": true
+    },
+    {
+      "name": "Essence of dream",
+      "value": 1800,
+      "enable": true
     }
   ]
 }

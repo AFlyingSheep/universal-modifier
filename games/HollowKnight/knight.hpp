@@ -19,8 +19,13 @@ struct KnightGold : public OffsetBase<KnightGold, int, 6> {
   static constexpr int offset[6] = {0x19B8BE0, 0x10, 0x88, 0x28, 0x58, 0x1C4};
 };
 
+struct KnightEssence : public OffsetBase<KnightEssence, int, 6> {
+  static constexpr int offset[6] = {0x19B8BE0, 0x10, 0x88, 0x28, 0x58, 0x274};
+};
+
 struct Knight {
-  using GameElement = Typelist<KnightHealth, KnightPower, KnightGold>;
+  using GameElement =
+      Typelist<KnightHealth, KnightPower, KnightGold, KnightEssence>;
   void get_instance() {}
 
   const static std::string exeName;
