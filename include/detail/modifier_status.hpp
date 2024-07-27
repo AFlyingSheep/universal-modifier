@@ -1,0 +1,27 @@
+#ifndef MODIFIER_STATUS_HPP
+#define MODIFIER_STATUS_HPP
+
+#include "format.hpp"
+
+enum class MODIFIER_STATUS {
+  SUCCESS,
+  WRITE_ERROR,
+  READ_ERROR,
+  CANCEL,
+};
+
+enum class PROCESS_STATUS {
+  SUCCESS,
+  PROCESS_NOT_FOUND,
+  PROCESS_ENUM_ERROR,
+  PROCESS_NOT_OPEN,
+  DLL_NOT_FOUNT,
+  BASE_ADDRESS_NOT_FOUND,
+  UNKNOWN_ERROR,
+};
+
+namespace UniversalModifier {
+static PROCESS_STATUS last_error = PROCESS_STATUS::SUCCESS;
+}
+
+#endif

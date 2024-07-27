@@ -12,6 +12,8 @@
 #include <utility>
 
 #include "baseAddressFind.hpp"
+#include "detail/format.hpp"
+#include "detail/modifier_status.hpp"
 #include "detail/typelist.hpp"
 
 template <typename GameType>
@@ -33,25 +35,26 @@ class ModifierKernel {
   }
 
   template <typename TypeList>
-  int write_buffer() {
+  MODIFIER_STATUS write_buffer() {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
       if (Type::get_enable()) {
         if (!WriteProcessMemory(h_process_, (LPVOID)Type::real_ptr,
                                 &Type::default_value,
                                 sizeof(typename Type::ValueType), NULL)) {
-          printf("Write memory error in address: %p.\n", (void*)Type::real_ptr);
-          return 1;
+          UM_ERROR("Write memory error in address: %p.\n",
+                   (void*)Type::real_ptr);
+          return MODIFIER_STATUS::WRITE_ERROR;
         }
       }
       return write_buffer<PopFront<TypeList>>();
     } else {
-      return 0;
+      return MODIFIER_STATUS::SUCCESS;
     }
   }
 
   template <typename TypeList>
-  int cout_buff() {
+  MODIFIER_STATUS cout_buff() {
     if constexpr (!IsEmpty<TypeList>::value) {
       using Type = Front<TypeList>;
       if (Type::get_enable()) {
@@ -59,30 +62,33 @@ class ModifierKernel {
       }
       return cout_buff<PopFront<TypeList>>();
     } else {
-      return 0;
+      return MODIFIER_STATUS::SUCCESS;
     }
   }
 
-  void run(int time, int interval) {
+  MODIFIER_STATUS run(int time, int interval) {
     bool inf = (time < 0);
     while (inf || time > 0) {
-      if (!write_buffer<typename GameType::GameElement>()) {
-        printf("Rewrite success, interval: %d ms, remaining round: %d.\n",
-               interval, time);
+      if (write_buffer<typename GameType::GameElement>() ==
+          MODIFIER_STATUS::SUCCESS) {
+        UM_INFO("Rewrite success, interval: %d ms, remaining round: %d.\n",
+                interval, time);
         if (time > 0) {
           time--;
         }
         Sleep(interval);
       } else {
-        printf("Rewrite error!");
-        return;
+        return MODIFIER_STATUS::WRITE_ERROR;
       }
     }
+    return MODIFIER_STATUS::SUCCESS;
   }
 
-  void start() { run(repeat_time_, interval_); }
+  MODIFIER_STATUS start() { return run(repeat_time_, interval_); }
 
-  void run_test() { cout_buff<typename GameType::GameElement>(); }
+  MODIFIER_STATUS run_test() {
+    return cout_buff<typename GameType::GameElement>();
+  }
 
   template <typename TypeList>
   void init_pointer() {
@@ -150,9 +156,8 @@ class ModifierKernel {
   void init_value(std::string config_file = "config.json") {
     std::ifstream stream(config_file);
     if (!stream) {
-      std::cerr << "Can't open the config json: " << config_file << "."
-                << std::endl;
-      std::cerr << "Now use the default value.";
+      UM_WARN("Can't open the config json: %s. Now use the default value.",
+              config_file.c_str());
       return;
     }
 
@@ -161,8 +166,7 @@ class ModifierKernel {
 
     init_value_by_config(config_json[GameType::configName]);
     init_global_value(config_json["global_config"]);
-    std::cout << "Read the config file and set value successfully."
-              << std::endl;
+    UM_INFO("Read the config file and set value successfully.\n");
   }
 
  private:

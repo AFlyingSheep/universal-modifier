@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include "detail/modifier_status.hpp"
+
 DWORD GetProcessIdByName(const std::string& processName) {
   DWORD processId = 0;
   HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -27,6 +29,10 @@ DWORD GetProcessIdByName(const std::string& processName) {
     CloseHandle(hSnapshot);
   }
 
+  if (processId == 0) {
+    UniversalModifier::last_error = PROCESS_STATUS::PROCESS_NOT_FOUND;
+  }
+
   return processId;
 }
 
@@ -38,8 +44,7 @@ uintptr_t findBaseAddress(const char* processName, const char* targetDllName) {
   HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
                                 FALSE, processId);
   if (hProcess == NULL) {
-    std::cout << "Failed to open process. Error: " << GetLastError()
-              << std::endl;
+    UniversalModifier::last_error = PROCESS_STATUS::PROCESS_NOT_OPEN;
     return 0;
   }
 
@@ -47,9 +52,8 @@ uintptr_t findBaseAddress(const char* processName, const char* targetDllName) {
   HMODULE hModules[1024];
   DWORD cbNeeded;
   if (!EnumProcessModules(hProcess, hModules, sizeof(hModules), &cbNeeded)) {
-    std::cout << "Failed to enumerate process modules. Error: "
-              << GetLastError() << std::endl;
     CloseHandle(hProcess);
+    UniversalModifier::last_error = PROCESS_STATUS::PROCESS_ENUM_ERROR;
     return 0;
   }
 
@@ -71,7 +75,7 @@ uintptr_t findBaseAddress(const char* processName, const char* targetDllName) {
   }
 
   if (hTargetModule == NULL) {
-    std::cout << "Target DLL not found in the process." << std::endl;
+    UniversalModifier::last_error = PROCESS_STATUS::DLL_NOT_FOUNT;
     CloseHandle(hProcess);
     return 1;
   }

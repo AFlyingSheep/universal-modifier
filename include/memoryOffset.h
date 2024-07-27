@@ -14,13 +14,10 @@ struct OffsetBase {
     real_ptr = base;
     for (int level = 0; level < OFFSET_NUM - 1; level++) {
       real_ptr += Derive::offset[level];
-      // printf("Try to access %p\n", (void*)real_ptr);
       if (!ReadProcessMemory(h_process, (LPCVOID)real_ptr, &real_ptr,
                              sizeof(DWORD_PTR), NULL)) {
-        printf("Open memory error.\n");
         return 1;
       }
-      // printf("Get value %p\n", (void*)real_ptr);
     }
     real_ptr += Derive::offset[OFFSET_NUM - 1];
     return 0;
