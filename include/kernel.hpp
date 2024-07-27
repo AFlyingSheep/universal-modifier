@@ -68,14 +68,20 @@ class ModifierKernel {
 
   MODIFIER_STATUS run(int time, int interval) {
     bool inf = (time < 0);
+    int global_round = 0;
     while (inf || time > 0) {
+      global_round++;
       if (write_buffer<typename GameType::GameElement>() ==
           MODIFIER_STATUS::SUCCESS) {
         UM_INFO("Rewrite success, interval: %d ms, remaining round: %d.\n",
                 interval, time);
-        if (time > 0) {
-          time--;
+
+        if (time > 0) time--;
+        if (global_round % reload_time == 0) {
+          init_pointer<typename GameType::GameElement>();
+          UM_INFO("Reload the pointer over.\n");
         }
+
         Sleep(interval);
       } else {
         return MODIFIER_STATUS::WRITE_ERROR;
@@ -177,6 +183,9 @@ class ModifierKernel {
   // Global configuration
   int repeat_time_;
   int interval_;
+
+  // Reinit pointer time
+  const int reload_time = 10;
 };
 
 #endif  // KERNEL_HPP
